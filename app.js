@@ -157,7 +157,6 @@ if(gain&&audio)gain.gain.setTargetAtTime(soundOn?.055+p*.025:0,audio.currentTime
 requestAnimationFrame(render)}
 $('#begin').onclick=()=>scrollToProgress(.34);$('#replay').onclick=()=>scrollToProgress(0);$('.wordmark').onclick=e=>{e.preventDefault();scrollToProgress(0)};
 document.querySelectorAll('[data-progress]').forEach(b=>b.onclick=()=>scrollToProgress(Number(b.dataset.progress)));
-$('#aboutButton').onclick=()=>$('#about').showModal();$('#about .close').onclick=()=>$('#about').close();$('#about').onclick=e=>{if(e.target===$('#about')){let r=$('#about').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('#about').close()}};
 $('#sound').onclick=async()=>{try{if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();gain=audio.createGain();gain.gain.value=0;gain.connect(audio.destination);[130.81,196,261.63,329.63].forEach((f,i)=>{let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.17/(i+1);o.connect(g);g.connect(gain);o.start();let l=audio.createOscillator(),lg=audio.createGain();l.frequency.value=.08+i*.025;lg.gain.value=.06;l.connect(lg);lg.connect(g.gain);l.start()})}await audio.resume();soundOn=!soundOn;$('#sound').setAttribute('aria-pressed',String(soundOn));$('#sound span').textContent=soundOn?'サウンド：オン':'サウンド：オフ'}catch{$('#sound span').textContent='サウンドを再生できません'}};
 updateScroll();requestAnimationFrame(render);
 })();

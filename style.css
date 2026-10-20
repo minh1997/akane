@@ -23,9 +23,7 @@ header { position: fixed; top: 0; left: 0; right: 0; height: 100px; margin: 0 5.
 .wordmark { display: flex; gap: 11px; align-items: center; font-family: 'Noto Serif JP', 'Yu Mincho', 'Hiragino Mincho ProN', serif; font-size: 25px; letter-spacing: .06em; }
 .wordmark svg { width: 25px; height: 31px; }
 .brand-dot { color: var(--red); }
-.header-center { font-size: 9px; letter-spacing: .12em; margin-left: -55px; color: var(--sky-muted); }
-.about-button { font-size: 11px; padding: 12px 0; }
-.about-button span { margin-left: 18px; font-size: 17px; }
+.header-center { font-size: 9px; letter-spacing: .12em; margin-left: 0; color: var(--sky-muted); position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
 #journey { height: 650vh; }
 .scene { position: fixed; inset: 0; overflow: hidden; isolation: isolate; }
 .sky { position: absolute; inset: 0; z-index: -2; pointer-events: none; background: linear-gradient(180deg, #bbd4dc, #e6e8d8 65%, #f3edda); }
@@ -82,14 +80,6 @@ footer { position: fixed; left: 5.2%; right: 5.2%; bottom: 0; z-index: 5; paddin
 .bloomed .time-readout { opacity: 0; visibility: hidden; }
 .bloomed .begin { visibility: hidden; }
 .bloomed .scroll-hint { opacity: 0; }
-dialog { width: min(530px, 88vw); border: 1px solid var(--line); padding: 49px; background: var(--paper); color: var(--ink); box-shadow: 0 20px 90px #101c3040; }
-dialog::backdrop { background: #17243760; backdrop-filter: blur(7px); }
-.close { position: absolute; right: 18px; top: 12px; font-size: 27px; color: var(--muted); }
-.eyebrow { display: flex; gap: 12px; align-items: center; font-size: 9px; letter-spacing: 2.2px; color: var(--muted); }
-h2 { font: 400 36px/1.25 'Noto Serif JP', 'Yu Mincho', 'Hiragino Mincho ProN', serif; letter-spacing: -1px; margin: 25px 0; }
-h2 em { color: var(--red); font-style: normal; }
-dialog p { line-height: 2; color: var(--muted); font-size: 12px; }
-.dialog-note { display: block; margin-top: 25px; font-size: 9px; color: var(--muted); }
 #flower, #bud, #leaves > g { will-change: transform; }
 @media (max-height: 760px) and (min-width: 701px) {
   header { height: 80px; }
@@ -103,8 +93,6 @@ dialog p { line-height: 2; color: var(--muted); font-size: 12px; }
   header { height: 80px; margin: 0 6%; }
   .wordmark { font-size: 23px; }
   .header-center { display: none; }
-  .about-button { font-size: 10px; }
-  .about-button span { margin-left: 9px; }
   .scene-instruction { top: 110px; font-size: 9px; gap: 12px; }
   .arrow-circle { height: 25px; width: 25px; font-size: 14px; }
   .sky-status { top: 156px; left: 50%; transform: translateX(-50%); font-size: 8px; }
@@ -130,8 +118,6 @@ dialog p { line-height: 2; color: var(--muted); font-size: 12px; }
   .scroll-hint { display: none; }
   .replay { left: 8%; bottom: 22%; font-size: 9px; }
   .replay span { margin-left: 8px; }
-  dialog { padding: 35px 26px; }
-  h2 { font-size: 30px; }
 }
 @media (max-width: 700px) and (max-height: 700px) {
   .scene-instruction { top: 96px; }

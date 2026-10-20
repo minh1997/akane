@@ -22,10 +22,10 @@ for(let i=0;i<52;i++){let a=i*2.3999,r=24+(i%7)*2.1,x=Math.cos(a)*r,y=Math.sin(a
 for(let i=0;i<11;i++){let a=i*Math.PI*2/11;make('path',{d:`M0 0L${Math.cos(a)*17} ${Math.sin(a)*17}`,stroke:'#9b9e6d','stroke-width':'1.4',opacity:'.65'},$('#seedHead'))}
 const motes=[];for(let i=0;i<14;i++){motes.push(make('circle',{r:i%3===0?1.3:.7,opacity:'.28'},$('#motes')))}
 const chapters=[
-  {phase:'Khởi đầu của một điều đẹp đẽ.',phrase:'Mọi hành trình bắt đầu từ một mầm nhỏ.'},
-  {phase:'Đón nắng và vươn mình.',phrase:'Không cần vội. Cứ hướng về phía ánh sáng.'},
-  {phase:'Một lời hẹn còn khép lại.',phrase:'Có những chờ đợi mang hình dáng một nụ hoa.'},
-  {phase:'Khoảnh khắc của riêng mình.',phrase:'Một đóa nở. Cả một hành trình.'}
+  {phase:'美しいものの、はじまり。',phrase:'すべては、小さな芽から。'},
+  {phase:'光を浴びて、空へ。',phrase:'あわてずに、光のほうへ。'},
+  {phase:'まだ、つぼみの中で。',phrase:'待つ時間も、花の一部。'},
+  {phase:'あなたらしく、花ひらく。',phrase:'一輪の花に、ここまでの時間を込めて。'}
 ];
 // Two days pass as the plant grows; reverse scrolling rewinds the sky too.
 const sky=$('#sky'),sun=$('#sun'),moon=$('#moon'),stars=$('#stars'),clouds=$('#clouds');
@@ -72,9 +72,11 @@ function paintSky(p){
   moon.style.opacity=smooth(.2,.85,1-daylight).toFixed(3);
   stars.style.opacity=smooth(.3,.94,night).toFixed(3);
   clouds.style.opacity=(.65-.57*night).toFixed(3);
-  const label=night>.8?'Ban đêm':night>.24?(Math.sin(angle)>0?'Hoàng hôn':'Bình minh'):'Ban ngày';
+  const label=night>.8?'夜':night>.24?(Math.sin(angle)>0?'夕暮れ':'夜明け'):'昼';
   if(label!==lastSkyLabel){$('#skyLabel').textContent=label;lastSkyLabel=label;}
 }
+const giftMessage=$('#giftMessage');
+let giftVisible=false;
 let target=0,current=0,lastChapter=-1,audio=null,soundOn=false,gain=null;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function scrollToProgress(p){window.scrollTo({top:p*(document.documentElement.scrollHeight-innerHeight),behavior:reduced?'instant':'smooth'})}
@@ -83,6 +85,15 @@ addEventListener('scroll',updateScroll,{passive:true});addEventListener('resize'
 function render(t){
 current=reduced?target:current+(target-current)*.085;if(Math.abs(target-current)<.0001)current=target;const p=current;
 paintSky(p);
+const giftReveal=smooth(.88,.98,p);
+giftMessage.style.setProperty('--gift-reveal',giftReveal.toFixed(3));
+giftMessage.style.visibility=giftReveal>0?'visible':'hidden';
+const showGift=giftReveal>0;
+if(showGift!==giftVisible){
+  giftMessage.setAttribute('aria-hidden',String(!showGift));
+  document.body.classList.toggle('gift-revealed',showGift);
+  giftVisible=showGift;
+}
 const grow=smooth(0,.73,p),topY=626-226*grow,topX=350,sway=reduced?0:Math.sin(t*.0007)*1.4*grow;
 $('#stem').setAttribute('d',`M350 712 C${341+sway} ${666-grow*60} ${392+sway} ${topY+100} ${topX+sway} ${topY}`);
 leaves.forEach(({g,start,side,size},i)=>{let s=smooth(start-.12,start+.2,p);if(i<2)s=.55+.45*s;let y=683-(35+i*36)*(.18+grow*.82),x=350+Math.sin((712-y)/(712-topY)*3)*12;g.setAttribute('transform',`translate(${x+sway} ${y}) rotate(${side===1?103:0}) scale(${s*size*(.54+grow*.46)} ${s*size*(.54+grow*.46)})`)});
@@ -94,12 +105,12 @@ $('#roots').style.opacity=.25+.2*grow;
 motes.forEach((m,i)=>{const time=reduced?0:t*.000012;m.setAttribute('cx',280+Math.sin(i*7.21+time)*160);m.setAttribute('cy',300+((i*43-time*100)%350));m.style.opacity=(.13+grow*.13)*(i%3?.5:1)});
 $('#trackFill').style.width=`${p*100}%`;$('#day').textContent=String(Math.round(1+p*89)).padStart(2,'0');
 const chapter=p<.26?0:p<.57?1:p<.79?2:3;
-if(chapter!==lastChapter){const c=chapters[chapter];$('#phase').textContent=c.phase;$('#chapterPhrase').textContent=c.phrase;$('#chapterIndex').textContent=`0${chapter+1} / 04`;$('#specimenNumber').textContent=`FIG. 0${chapter+1}`;document.body.classList.toggle('bloomed',chapter===3);document.querySelectorAll('.chapter').forEach((b,i)=>{b.classList.toggle('active',i<=chapter);b.setAttribute('aria-current',i===chapter?'step':'false')});lastChapter=chapter}
+if(chapter!==lastChapter){const c=chapters[chapter];$('#phase').textContent=c.phase;$('#chapterPhrase').textContent=c.phrase;$('#chapterIndex').textContent=`0${chapter+1} / 04`;$('#specimenNumber').textContent=`図 0${chapter+1}`;document.body.classList.toggle('bloomed',chapter===3);document.querySelectorAll('.chapter').forEach((b,i)=>{b.classList.toggle('active',i<=chapter);b.setAttribute('aria-current',i===chapter?'step':'false')});lastChapter=chapter}
 if(gain&&audio)gain.gain.setTargetAtTime(soundOn?.055+p*.025:0,audio.currentTime,.3);
 requestAnimationFrame(render)}
 $('#begin').onclick=()=>scrollToProgress(.34);$('#replay').onclick=()=>scrollToProgress(0);$('.wordmark').onclick=e=>{e.preventDefault();scrollToProgress(0)};
 document.querySelectorAll('[data-progress]').forEach(b=>b.onclick=()=>scrollToProgress(Number(b.dataset.progress)));
 $('#aboutButton').onclick=()=>$('#about').showModal();$('#about .close').onclick=()=>$('#about').close();$('#about').onclick=e=>{if(e.target===$('#about')){let r=$('#about').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('#about').close()}};
-$('#sound').onclick=async()=>{try{if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();gain=audio.createGain();gain.gain.value=0;gain.connect(audio.destination);[130.81,196,261.63,329.63].forEach((f,i)=>{let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.17/(i+1);o.connect(g);g.connect(gain);o.start();let l=audio.createOscillator(),lg=audio.createGain();l.frequency.value=.08+i*.025;lg.gain.value=.06;l.connect(lg);lg.connect(g.gain);l.start()})}await audio.resume();soundOn=!soundOn;$('#sound').setAttribute('aria-pressed',String(soundOn));$('#sound span').textContent=soundOn?'Âm thanh bật':'Âm thanh tắt'}catch{$('#sound span').textContent='Âm thanh chưa khả dụng'}};
+$('#sound').onclick=async()=>{try{if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();gain=audio.createGain();gain.gain.value=0;gain.connect(audio.destination);[130.81,196,261.63,329.63].forEach((f,i)=>{let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.17/(i+1);o.connect(g);g.connect(gain);o.start();let l=audio.createOscillator(),lg=audio.createGain();l.frequency.value=.08+i*.025;lg.gain.value=.06;l.connect(lg);lg.connect(g.gain);l.start()})}await audio.resume();soundOn=!soundOn;$('#sound').setAttribute('aria-pressed',String(soundOn));$('#sound span').textContent=soundOn?'サウンド：オン':'サウンド：オフ'}catch{$('#sound span').textContent='サウンドを再生できません'}};
 updateScroll();requestAnimationFrame(render);
 })();

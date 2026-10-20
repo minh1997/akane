@@ -11,12 +11,59 @@ make('path',{d:'M0 0 C-27-7-52-28-61-67 C-42-70-8-51 0 0Z',fill:'url(#leafGradie
 make('path',{d:'M0 0Q-28-31-59-64 M-17-24l-18-6M-28-37l-2-17M-37-46l-15-3',fill:'none',stroke:'#bbc098','stroke-width':'.7',opacity:'.6'},g);
 leaves.push({g,start,side,size});
 });
-// Layered translucent petals and fine veins keep the flower organic at every size.
-const petalPath='M0 13 C-25 22-88-9-107-54 C-123-91-108-126-88-137 C-72-148-63-135-48-145 C-26-157-2-149 12-133 C32-110 34-72 20-43 C10-18 1-5 0 13Z';
+// Every petal starts folded inside the same bud, then unfurls from its base.
+const petalOutline=[
+  ['M',0,13],
+  ['C',-25,22,-88,-9,-107,-54],
+  ['C',-123,-91,-108,-126,-88,-137],
+  ['C',-72,-148,-63,-135,-48,-145],
+  ['C',-26,-157,-2,-149,12,-133],
+  ['C',32,-110,34,-72,20,-43],
+  ['C',10,-18,1,-5,0,13],
+  ['Z']
+];
+function petalPath(commands,open){
+  return commands.map(([command,...coordinates])=>command+coordinates.map((value,i)=>{
+    const folded=i%2===0?value*.08:(value-13)*.23;
+    return (folded+(value-folded)*open).toFixed(2);
+  }).join(' ')).join(' ');
+}
+const petalAngles=[-17,73,163,-107,28,118,-152,-62];
+const petals=[];
 for(let i=0;i<8;i++){
-const angle=i*45-17,g=make('g',{transform:`rotate(${angle}) scale(${i<4?1:.84})`},$('#petals'));
-make('path',{d:petalPath,fill:`url(#petal${i%2?'A':'B'})`,'fill-opacity':i<4?'.96':'.89',stroke:'#9e2725','stroke-width':'.5'},g);
-for(let j=0;j<9;j++){let x=-85+j*12;make('path',{d:`M0 4Q${x*.6} -49 ${x} ${-125+Math.abs(j-4)*2}`,fill:'none',stroke:j%2?'#ffd5a4':'#8b1727','stroke-width':j%2?'.7':'.5',opacity:j%2?'.17':'.19'},g)}
+  const inner=i>=4,index=inner?i-4:i;
+  const g=make('g',{},$('#petals'));
+  const outline=make('path',{fill:`url(#petal${i%2?'A':'B'})`,'fill-opacity':inner?'.89':'.96',stroke:'#9e2725','stroke-width':'.5'},g);
+  const veins=[];
+  for(let j=0;j<9;j++){
+    const x=-85+j*12,commands=[['M',0,4],['Q',x*.6,-49,x,-125+Math.abs(j-4)*2]];
+    const path=make('path',{fill:'none',stroke:j%2?'#ffd5a4':'#8b1727','stroke-width':j%2?'.7':'.5',opacity:j%2?'.17':'.19'},g);
+    veins.push({path,commands});
+  }
+  petals.push({g,outline,veins,angle:petalAngles[i],foldedAngle:(index-1.5)*2,
+    size:inner?.84:1,start:inner?.75+index*.008:.70+index*.006,
+    end:inner?.976+index*.008:.93+index*.006});
+}
+const bud=$('#bud'),sepalLeft=$('#sepalLeft'),sepalRight=$('#sepalRight'),flowerCore=$('#flowerCore');
+let lastBloomProgress=-1;
+function unfurlPetals(p){
+  if(p===lastBloomProgress)return;
+  lastBloomProgress=p;
+  for(const petal of petals){
+    const open=smooth(petal.start,petal.end,p);
+    const angle=petal.foldedAngle+(petal.angle-petal.foldedAngle)*open;
+    petal.g.setAttribute('transform',`rotate(${angle}) scale(${petal.size})`);
+    petal.outline.setAttribute('d',petalPath(petalOutline,open));
+    for(const vein of petal.veins)vein.path.setAttribute('d',petalPath(vein.commands,open));
+  }
+  // The green casing opens at the stem tip; it never shrinks behind a second flower.
+  const split=smooth(.68,.83,p);
+  sepalLeft.setAttribute('transform',`rotate(${-92*split})`);
+  sepalRight.setAttribute('transform',`rotate(${92*split})`);
+  bud.style.opacity=1-smooth(.82,.92,p);
+  const center=smooth(.79,.96,p);
+  flowerCore.style.opacity=center;
+  flowerCore.setAttribute('transform',`scale(${.45+.55*center})`);
 }
 for(let i=0;i<52;i++){let a=i*2.3999,r=24+(i%7)*2.1,x=Math.cos(a)*r,y=Math.sin(a)*r;make('path',{d:`M0 0L${x} ${y}`,stroke:'#482524','stroke-width':'1.2'},$('#stamens'));make('ellipse',{cx:x,cy:y,rx:2,ry:2.8,fill:i%3?'#332723':'#b9985b',transform:`rotate(${a*180/Math.PI} ${x} ${y})`},$('#stamens'))}
 for(let i=0;i<11;i++){let a=i*Math.PI*2/11;make('path',{d:`M0 0L${Math.cos(a)*17} ${Math.sin(a)*17}`,stroke:'#9b9e6d','stroke-width':'1.4',opacity:'.65'},$('#seedHead'))}
@@ -97,10 +144,10 @@ if(showGift!==giftVisible){
 const grow=smooth(0,.73,p),topY=626-226*grow,topX=350,sway=reduced?0:Math.sin(t*.0007)*1.4*grow;
 $('#stem').setAttribute('d',`M350 712 C${341+sway} ${666-grow*60} ${392+sway} ${topY+100} ${topX+sway} ${topY}`);
 leaves.forEach(({g,start,side,size},i)=>{let s=smooth(start-.12,start+.2,p);if(i<2)s=.55+.45*s;let y=683-(35+i*36)*(.18+grow*.82),x=350+Math.sin((712-y)/(712-topY)*3)*12;g.setAttribute('transform',`translate(${x+sway} ${y}) rotate(${side===1?103:0}) scale(${s*size*(.54+grow*.46)} ${s*size*(.54+grow*.46)})`)});
-const bloom=smooth(.72,1,p),bud=smooth(.43,.67,p)*(1-smooth(.73,.88,p));
-$('#bud').setAttribute('transform',`translate(${topX+sway} ${topY}) rotate(${(1-bloom)*-12}) scale(${bud*.73})`);
-$('#flower').setAttribute('transform',`translate(${topX+sway} ${topY-8}) rotate(${-11+8*bloom}) scale(${bloom*1.3})`);
-$('#flower').style.opacity=smooth(.72,.79,p);
+const budGrowth=smooth(.43,.665,p),opening=smooth(.68,1,p);
+// Bud, petals and flower center share one attachment point throughout the transition.
+$('#flower').setAttribute('transform',`translate(${topX+sway} ${topY}) rotate(${-12+9*opening}) scale(${budGrowth*1.3})`);
+unfurlPetals(p);
 $('#roots').style.opacity=.25+.2*grow;
 motes.forEach((m,i)=>{const time=reduced?0:t*.000012;m.setAttribute('cx',280+Math.sin(i*7.21+time)*160);m.setAttribute('cy',300+((i*43-time*100)%350));m.style.opacity=(.13+grow*.13)*(i%3?.5:1)});
 $('#trackFill').style.width=`${p*100}%`;$('#day').textContent=String(Math.round(1+p*89)).padStart(2,'0');
